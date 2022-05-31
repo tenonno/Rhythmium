@@ -26,6 +26,9 @@ namespace Rhythmium
         /// </summary>
         public TNoteEntity Tail => _tail;
 
+        public bool EnableBezier => _jsonData.Bezier.Enable;
+        public Vector2 BezierValue => _jsonData.Bezier.Value;
+
         public void Initialize(NoteLineJsonData noteLine, TNoteEntity headNote, TNoteEntity tailNote)
         {
             _jsonData = noteLine;
