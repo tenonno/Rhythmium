@@ -1,30 +1,59 @@
-using System;
-using Guid = System.String;
+#nullable enable
 
-// ReSharper disable InconsistentNaming
+using System;
+using UnityEngine;
 
 namespace Rhythmium
 {
     [Serializable]
-    public struct NoteCustomPropsJsonData
-    {
-        public string type;
-        public Guid targetNoteLine;
-        public float scale;
-        public float distance;
-    }
-
-    [Serializable]
     public sealed class NoteJsonData
     {
-        public Guid guid;
-        public int horizontalSize;
-        public FractionJsonData horizontalPosition;
-        public int measureIndex;
-        public FractionJsonData measurePosition;
-        public string type;
-        public Guid lane;
-        public NoteCustomPropsJsonData customProps;
+        // ReSharper disable InconsistentNaming
+
+        [SerializeField] private string guid;
+        [SerializeField] private int horizontalSize;
+        [SerializeField] private FractionJsonData horizontalPosition;
+        [SerializeField] private int measureIndex;
+        [SerializeField] private FractionJsonData measurePosition;
+        [SerializeField] private string type;
+        [SerializeField] private string lane;
+        [SerializeField] private string layer;
+        [SerializeField] private NoteCustomPropsJsonData customProps;
+
+        // ReSharper restore InconsistentNaming
+
+        public string Guid => guid;
+        public int HorizontalSize => horizontalSize;
+        public FractionJsonData HorizontalPosition => horizontalPosition;
+        public int MeasureIndex => measureIndex;
+        public FractionJsonData MeasurePosition => measurePosition;
+        public string Type => type;
+        public string Lane => lane;
+        public string Layer => layer;
+        public NoteCustomPropsJsonData CustomProps => customProps;
+
+        public NoteJsonData(
+            string guid,
+            int horizontalSize,
+            FractionJsonData horizontalPosition,
+            int measureIndex,
+            FractionJsonData measurePosition,
+            string type,
+            string lane,
+            string layer,
+            NoteCustomPropsJsonData customProps
+        )
+        {
+            this.guid = guid;
+            this.horizontalSize = horizontalSize;
+            this.horizontalPosition = horizontalPosition;
+            this.measureIndex = measureIndex;
+            this.measurePosition = measurePosition;
+            this.type = type;
+            this.lane = lane;
+            this.layer = layer;
+            this.customProps = customProps;
+        }
 
         public override string ToString()
         {
@@ -38,17 +67,32 @@ namespace Rhythmium
                 horizontalPosition.Denominator - 1 - horizontalPosition.Numerator - (horizontalSize - 1);
             var mirroredHorizontalPosition = new FractionJsonData(mirroredNumerator, horizontalPosition.Denominator);
 
-            return new NoteJsonData
-            {
-                guid = guid,
-                horizontalSize = horizontalSize,
-                horizontalPosition = mirroredHorizontalPosition,
-                measureIndex = measureIndex,
-                measurePosition = measurePosition,
-                type = type,
-                lane = lane,
-                customProps = customProps
-            };
+            return new NoteJsonData(
+                guid,
+                horizontalSize,
+                mirroredHorizontalPosition,
+                measureIndex,
+                measurePosition,
+                type,
+                lane,
+                layer,
+                customProps
+            );
+        }
+
+        public NoteJsonData WithType(string newType)
+        {
+            return new NoteJsonData(
+                guid,
+                horizontalSize,
+                horizontalPosition,
+                measureIndex,
+                measurePosition,
+                newType,
+                lane,
+                layer,
+                customProps
+            );
         }
     }
 }

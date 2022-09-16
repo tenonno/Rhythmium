@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using UnityEngine;
 
@@ -11,12 +13,19 @@ namespace Rhythmium
     {
         [SerializeField] private float _speed;
         [SerializeField] private float _position;
+        [SerializeField] private string _layer;
 
-        /// <summary>速度</summary>
+        /// <summary>
+        /// 速度
+        /// </summary>
         public float Speed => _speed;
 
-        /// <summary>小節位置</summary>
+        /// <summary>
+        /// 小節位置
+        /// </summary>
         public float Position => _position;
+
+        public string Layer => _layer;
 
         /// <summary>
         /// コンストラクタ
@@ -26,6 +35,7 @@ namespace Rhythmium
         {
             _position = speedChangeJsonData.measureIndex + speedChangeJsonData.measurePosition.To01();
             _speed = speedChangeJsonData.speed;
+            _layer = speedChangeJsonData.layer;
         }
 
         /// <summary>
@@ -34,8 +44,9 @@ namespace Rhythmium
         /// <param name="speedChangeJsonData">速度変更情報</param>
         public SpeedChangeEntity(OtherObjectJsonData speedChangeJsonData)
         {
-            _position = speedChangeJsonData.measureIndex + speedChangeJsonData.measurePosition.To01();
-            _speed = float.Parse(speedChangeJsonData.value);
+            _position = speedChangeJsonData.MeasureIndex + speedChangeJsonData.MeasurePosition.To01();
+            _speed = float.Parse(speedChangeJsonData.Value);
+            _layer = speedChangeJsonData.Layer;
         }
     }
 }

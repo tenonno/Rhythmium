@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using UnityEngine;
 
@@ -28,9 +30,9 @@ namespace Rhythmium
         /// <param name="jsonData">オブジェクト情報</param>
         public OtherObjectEntity(OtherObjectJsonData jsonData)
         {
-            _type = jsonData.type;
-            _position = jsonData.measureIndex + jsonData.measurePosition.To01();
-            _value = jsonData.value;
+            _type = jsonData.Type;
+            _position = jsonData.MeasureIndex + jsonData.MeasurePosition.To01();
+            _value = jsonData.Value;
         }
     }
 }

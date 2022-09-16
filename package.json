@@ -1,9 +1,8 @@
 {
   "name": "jp.tenonno.rhythmium",
   "displayName": "Rhythmium",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "unity": "2018.1",
   "description": "description",
-  "dependencies": {
-  }
+  "dependencies": {}
 }

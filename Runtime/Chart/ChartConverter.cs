@@ -20,51 +20,55 @@ namespace Rhythmium
         where TNoteLineEntity : NoteLineEntity<TNoteEntity>
         where TChartDifficulty : Enum
     {
+        protected abstract TChartEntity CreateInstance(
+            ChartJsonData chartJsonData,
+            string audioSource,
+            TChartDifficulty difficulty,
+            float startTime,
+            List<TNoteEntity> notes,
+            List<TNoteLineEntity> noteLines,
+            List<BpmChangeEntity> bpmChanges,
+            List<SpeedChangeEntity> speedChanges,
+            List<OtherObjectEntity> otherObjects,
+            List<MeasureEntity> measures,
+            List<LayerEntity> layers
+        );
+
         /// <summary>
         /// 譜面データを変換する
         /// </summary>
         /// <param name="chartJsonData">譜面データ</param>
         public TChartEntity Convert(ChartJsonData chartJsonData)
         {
-            var chart = ScriptableObject.CreateInstance<TChartEntity>();
-
-            return Convert(chartJsonData, chart);
-        }
-
-        /// <summary>
-        /// 譜面データを変換する
-        /// </summary>
-        /// <param name="chartJsonData">譜面データ</param>
-        /// <param name="chart">対象譜面</param>
-        protected virtual TChartEntity Convert(ChartJsonData chartJsonData, TChartEntity chart)
-        {
-            chart.AudioSource = chartJsonData.AudioSource.Split('.')[0];
-            chart.StartTime = chartJsonData.StartTime;
-            chart.Difficulty = (TChartDifficulty) Enum.ToObject(typeof(TChartDifficulty), chartJsonData.Difficulty);
+            var audioSource = chartJsonData.AudioSource.Split('.')[0];
+            var startTime = chartJsonData.StartTime;
+            var difficulty = (TChartDifficulty) Enum.ToObject(typeof(TChartDifficulty), chartJsonData.Difficulty);
 
             // bpm changes
-            var bpmChanges = new List<(float bpm, float position)>();
-            bpmChanges.AddRange(chartJsonData.Timeline.OtherObjects.Where(o => o.type == (int) OtherObjectType.Bpm)
-                .Select(bpmChangeJsonData => (float.Parse(bpmChangeJsonData.value),
-                    position: bpmChangeJsonData.measureIndex + bpmChangeJsonData.measurePosition.To01())));
+            var bpmChanges = chartJsonData.Timeline.OtherObjects.Where(o => o.Type == (int) OtherObjectType.Bpm)
+                .Select(bpmChangeJsonData =>
+                {
+                    return (
+                        bpm: float.Parse(bpmChangeJsonData.Value),
+                        position: bpmChangeJsonData.MeasureIndex + bpmChangeJsonData.MeasurePosition.To01()
+                    );
+                }).ToList();
 
             // speed changes
-            chart.SpeedChanges = new List<SpeedChangeEntity>();
-            foreach (var speedChange in chartJsonData.Timeline.OtherObjects.Where(o =>
-                o.type == (int) OtherObjectType.Speed))
-            {
-                chart.SpeedChanges.Add(new SpeedChangeEntity(speedChange));
-            }
+            var speedChanges = chartJsonData.Timeline.OtherObjects
+                .Where(o => o.Type == (int) OtherObjectType.Speed)
+                .Select(o => new SpeedChangeEntity(o))
+                .ToList();
 
             // カスタムオブジェクト
-            chart.OtherObjects = new List<OtherObjectEntity>();
+            var OtherObjects = new List<OtherObjectEntity>();
             foreach (var jsonData in chartJsonData.Timeline.OtherObjects.Where(
-                o => o.type >= (int) OtherObjectType.Other))
+                o => o.Type >= (int) OtherObjectType.Other))
             {
-                chart.OtherObjects.Add(new OtherObjectEntity(jsonData));
+                OtherObjects.Add(new OtherObjectEntity(jsonData));
             }
 
-            chart.BpmChanges = new List<BpmChangeEntity>();
+            var BpmChanges = new List<BpmChangeEntity>();
 
             var sortedBpmChanges = bpmChanges.OrderBy(bpmChange => bpmChange.position).ToList();
 
@@ -99,7 +103,7 @@ namespace Rhythmium
                     // 区間の秒数
                     var time = unitTime * tempo;
 
-                    chart.BpmChanges.Add(new BpmChangeEntity
+                    BpmChanges.Add(new BpmChangeEntity
                     {
                         BeginPosition = measureIndex,
                         EndPosition = measureIndex + 1,
@@ -114,27 +118,27 @@ namespace Rhythmium
             var noteGuidMap = new Dictionary<Guid, TNoteEntity>();
 
             // ノートを生成する
-            chart.Notes = new List<TNoteEntity>();
+            var Notes = new List<TNoteEntity>();
             foreach (var noteJsonData in chartJsonData.Timeline.Notes)
             {
                 // ノートの小節位置
-                var noteMeasurePosition = noteJsonData.measureIndex + noteJsonData.measurePosition.To01();
+                var noteMeasurePosition = noteJsonData.MeasureIndex + noteJsonData.MeasurePosition.To01();
 
                 // 判定時間を取得する
-                var judgeTime = chart.BpmChanges.Find(bpmRange => bpmRange.Between(noteMeasurePosition))
+                var judgeTime = BpmChanges.Find(bpmRange => bpmRange.Between(noteMeasurePosition))
                     .GetJudgeTime(noteMeasurePosition);
 
                 var note = ScriptableObject.CreateInstance<TNoteEntity>();
                 note.Initialize(noteJsonData, judgeTime);
-                note.name = $"note_{noteJsonData.guid}";
+                note.name = $"note_{noteJsonData.Guid}";
 
-                noteGuidMap[noteJsonData.guid] = note;
+                noteGuidMap[noteJsonData.Guid] = note;
 
-                chart.Notes.Add(note);
+                Notes.Add(note);
             }
 
             // ノートラインを生成する
-            chart.NoteLines = new List<TNoteLineEntity>();
+            var NoteLines = new List<TNoteLineEntity>();
             foreach (var noteLineJsonData in chartJsonData.Timeline.NoteLines)
             {
                 var headNote = noteGuidMap[noteLineJsonData.head];
@@ -145,10 +149,10 @@ namespace Rhythmium
 
                 var noteLine = ScriptableObject.CreateInstance<TNoteLineEntity>();
                 noteLine.Initialize(noteLineJsonData, headNote, tailNote);
-                chart.NoteLines.Add(noteLine);
+                NoteLines.Add(noteLine);
             }
 
-            chart.Measures = new List<MeasureEntity>();
+            var Measures = new List<MeasureEntity>();
 
             if (chartJsonData.Timeline.Measures != null)
             {
@@ -158,11 +162,11 @@ namespace Rhythmium
                     try
                     {
                         // 判定時間を取得する
-                        var judgeTime = chart.BpmChanges.Find(bpmRange => bpmRange.Between(measureJsonData.index))
+                        var judgeTime = BpmChanges.Find(bpmRange => bpmRange.Between(measureJsonData.index))
                             .GetJudgeTime(measureJsonData.index);
 
                         var measure = new MeasureEntity(measureJsonData, judgeTime);
-                        chart.Measures.Add(measure);
+                        Measures.Add(measure);
                     }
                     catch (NullReferenceException e)
                     {
@@ -171,9 +175,13 @@ namespace Rhythmium
                 }
             }
 
-            chart.Notes = chart.Notes.OrderBy(note => note.JudgeTime).ToList();
+            Notes = Notes.OrderBy(note => note.JudgeTime).ToList();
 
-            return chart;
+            var layers = chartJsonData.Layers.Select(layer => new LayerEntity(layer)).ToList();
+
+            return CreateInstance(chartJsonData, audioSource, difficulty, startTime, Notes, NoteLines, BpmChanges,
+                speedChanges,
+                OtherObjects, Measures, layers);
         }
     }
 }

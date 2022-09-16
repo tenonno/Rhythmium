@@ -47,15 +47,15 @@ namespace Rhythmium
             JsonData = note;
             IntType = GetNoteType(note);
 
-            switch (note.horizontalPosition.Denominator)
+            switch (note.HorizontalPosition.Denominator)
             {
                 case 24:
-                    LanePosition = note.horizontalPosition.Numerator;
-                    Size = note.horizontalSize;
+                    LanePosition = note.HorizontalPosition.Numerator;
+                    Size = note.HorizontalSize;
                     break;
                 case 6:
-                    LanePosition = note.horizontalPosition.Numerator * 4;
-                    Size = note.horizontalSize * 4;
+                    LanePosition = note.HorizontalPosition.Numerator * 4;
+                    Size = note.HorizontalSize * 4;
                     break;
                 default:
                     Debug.LogWarning($"ノーツの位置が不正です: {note}");
