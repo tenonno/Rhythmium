@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using UnityEngine;
 using Guid = System.String;
@@ -15,7 +13,8 @@ namespace Rhythmium
         [SerializeField] private Guid guid;
         [SerializeField] private int measureIndex;
         [SerializeField] private FractionJsonData measurePosition;
-        [SerializeField] private int type;
+        [SerializeField, Obsolete] private int type;
+        [SerializeField] private string typeName;
         [SerializeField] private string value;
         [SerializeField] private string layer;
 #pragma warning restore CS8618
@@ -25,9 +24,17 @@ namespace Rhythmium
         public Guid Guid => guid;
         public int MeasureIndex => measureIndex;
         public FractionJsonData MeasurePosition => measurePosition;
-        public int Type => type;
+
+        [Obsolete] public int Type => type;
+        public string TypeName => typeName;
+
         public string Value => value;
         public string Layer => layer;
+
+        public void MigrateTypeName(string[] typeNames)
+        {
+            typeName = typeNames[type];
+        }
     }
 
     public enum OtherObjectType

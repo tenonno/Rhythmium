@@ -1,13 +1,8 @@
-using System;
-
-// ReSharper disable InconsistentNaming
-
 namespace Rhythmium
 {
     /// <summary>
     /// BPM 変更情報
     /// </summary>
-    [Serializable]
     public struct BpmChangeEntity
     {
         /// <summary>開始時間</summary>

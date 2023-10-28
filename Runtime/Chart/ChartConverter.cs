@@ -18,6 +18,11 @@ namespace Rhythmium
         where TNoteLineEntity : NoteLineEntity<TNoteEntity>
         where TChartDifficulty : Enum
     {
+        protected abstract TNoteEntity CreateNoteEntity(NoteJsonData note, float judgeTime);
+
+        protected abstract TNoteLineEntity CreateNoteLineEntity(NoteLineJsonData jsonData, TNoteEntity head,
+            TNoteEntity tail);
+
         protected abstract TChartEntity CreateInstance(
             ChartJsonData chartJsonData,
             string audioSource,
@@ -32,34 +37,42 @@ namespace Rhythmium
             List<LayerEntity> layers
         );
 
+        protected abstract ChartJsonData Migrate(ChartJsonData chartJsonData);
+
         /// <summary>
         /// 譜面データを変換する
         /// </summary>
         /// <param name="chartJsonData">譜面データ</param>
         public TChartEntity Convert(ChartJsonData chartJsonData)
         {
+            chartJsonData = Migrate(chartJsonData);
+
             var audioSource = chartJsonData.AudioSource.Split('.')[0];
             var startTime = chartJsonData.StartTime;
             var difficulty = (TChartDifficulty)Enum.ToObject(typeof(TChartDifficulty), chartJsonData.Difficulty);
 
-            // bpm changes
-            var bpmChanges = chartJsonData.Timeline.OtherObjects.Where(o => o.Type == (int)OtherObjectType.Bpm)
-                .Select(bpmChangeJsonData => (
-                    bpm: float.Parse(bpmChangeJsonData.Value),
-                    position: bpmChangeJsonData.MeasureIndex + bpmChangeJsonData.MeasurePosition.To01()
-                )).ToList();
+            var bpmChanges = new List<(float bpm, float position)>();
+            var speedChanges = new List<SpeedChangeEntity>();
+            var otherObjectEntities = new List<OtherObjectEntity>();
 
-            // speed changes
-            var speedChanges = chartJsonData.Timeline.OtherObjects
-                .Where(o => o.Type == (int)OtherObjectType.Speed)
-                .Select(o => new SpeedChangeEntity(o))
-                .ToList();
-
-            // カスタムオブジェクト
-            var otherObjectEntities = chartJsonData.Timeline.OtherObjects
-                .Where(o => o.Type >= (int)OtherObjectType.Other)
-                .Select(jsonData => new OtherObjectEntity(jsonData))
-                .ToList();
+            foreach (var otherObjectJsonData in chartJsonData.Timeline.OtherObjects)
+            {
+                switch (otherObjectJsonData.TypeName)
+                {
+                    case "bpm":
+                        bpmChanges.Add((
+                            bpm: float.Parse(otherObjectJsonData.Value),
+                            position: otherObjectJsonData.MeasureIndex + otherObjectJsonData.MeasurePosition.To01()
+                        ));
+                        break;
+                    case "speed":
+                        speedChanges.Add(new SpeedChangeEntity(otherObjectJsonData));
+                        break;
+                    default:
+                        otherObjectEntities.Add(new OtherObjectEntity(otherObjectJsonData));
+                        break;
+                }
+            }
 
             var bpmChangeEntities = new List<BpmChangeEntity>();
 
@@ -91,9 +104,9 @@ namespace Rhythmium
                     if (chartJsonData.Timeline.Measures != null)
                     {
                         var tempoJsonData =
-                            chartJsonData.Timeline.Measures.FirstOrDefault(a => a.index == measureIndex);
+                            chartJsonData.Timeline.Measures.FirstOrDefault(a => a.Index == measureIndex);
 
-                        tempo = tempoJsonData == null ? 1f : tempoJsonData.beat.To01();
+                        tempo = tempoJsonData == null ? 1f : tempoJsonData.Beat.To01();
                     }
 
                     var length = end.position - begin.position;
@@ -119,9 +132,9 @@ namespace Rhythmium
                     if (chartJsonData.Timeline.Measures != null)
                     {
                         var tempoJsonData =
-                            chartJsonData.Timeline.Measures.FirstOrDefault(a => a.index == measureIndex);
+                            chartJsonData.Timeline.Measures.FirstOrDefault(a => a.Index == measureIndex);
 
-                        tempo = tempoJsonData == null ? 1f : tempoJsonData.beat.To01();
+                        tempo = tempoJsonData == null ? 1f : tempoJsonData.Beat.To01();
                     }
 
                     // 小節の途中で BPM が変わる場合がある
@@ -157,9 +170,8 @@ namespace Rhythmium
                 var judgeTime = bpmChangeEntities.Find(bpmRange => bpmRange.Between(noteMeasurePosition))
                     .GetJudgeTime(noteMeasurePosition);
 
-                var note = ScriptableObject.CreateInstance<TNoteEntity>();
-                note.Initialize(noteJsonData, judgeTime);
-                note.name = $"note_{noteJsonData.Guid}";
+                var note = CreateNoteEntity(noteJsonData, judgeTime);
+                // note.name = $"note_{noteJsonData.Guid}";
 
                 noteGuidMap[noteJsonData.Guid] = note;
 
@@ -170,14 +182,13 @@ namespace Rhythmium
             var noteLineEntities = new List<TNoteLineEntity>();
             foreach (var noteLineJsonData in chartJsonData.Timeline.NoteLines)
             {
-                var headNote = noteGuidMap[noteLineJsonData.head];
-                var tailNote = noteGuidMap[noteLineJsonData.tail];
+                var headNote = noteGuidMap[noteLineJsonData.Head];
+                var tailNote = noteGuidMap[noteLineJsonData.Tail];
 
                 // 横に繋がっているロングは除外する
                 if (Mathf.Approximately(headNote.JudgeTime, tailNote.JudgeTime)) continue;
 
-                var noteLine = ScriptableObject.CreateInstance<TNoteLineEntity>();
-                noteLine.Initialize(noteLineJsonData, headNote, tailNote);
+                var noteLine = CreateNoteLineEntity(noteLineJsonData, headNote, tailNote);
                 noteLineEntities.Add(noteLine);
             }
 
@@ -191,15 +202,15 @@ namespace Rhythmium
                     try
                     {
                         // 判定時間を取得する
-                        var judgeTime = bpmChangeEntities.Find(bpmRange => bpmRange.Between(measureJsonData.index))
-                            .GetJudgeTime(measureJsonData.index);
+                        var judgeTime = bpmChangeEntities.Find(bpmRange => bpmRange.Between(measureJsonData.Index))
+                            .GetJudgeTime(measureJsonData.Index);
 
                         var measure = new MeasureEntity(measureJsonData, judgeTime);
                         measureEntities.Add(measure);
                     }
                     catch (NullReferenceException e)
                     {
-                        Debug.LogError(measureJsonData.index + " / " + e.Message);
+                        Debug.LogError(measureJsonData.Index + " / " + e.Message);
                     }
                 }
             }

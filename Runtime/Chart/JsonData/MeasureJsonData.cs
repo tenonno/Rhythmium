@@ -1,14 +1,23 @@
 using System;
+using UnityEngine;
 using Guid = System.String;
 
-// ReSharper disable InconsistentNaming
 
 namespace Rhythmium
 {
     [Serializable]
-    public class MeasureJsonData
+    public sealed class MeasureJsonData
     {
-        public int index;
-        public FractionFloatJsonData beat;
+        // ReSharper disable InconsistentNaming
+
+        [SerializeField] private int index;
+        [SerializeField] private FractionFloatJsonData beat;
+        [SerializeField] private bool invisibleLine;
+
+        // ReSharper restore InconsistentNaming
+
+        public int Index => index;
+        public FractionFloatJsonData Beat => beat;
+        public bool InvisibleLine => invisibleLine;
     }
 }

@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using UnityEngine;
 
@@ -10,6 +8,7 @@ namespace Rhythmium
     {
         // ReSharper disable InconsistentNaming
 
+        [SerializeField] private int version;
         [SerializeField] private int musicGameSystemVersion;
         [SerializeField] private int difficulty;
         [SerializeField] private string level = null!;
@@ -22,6 +21,7 @@ namespace Rhythmium
 
         // ReSharper restore InconsistentNaming
 
+        public int Version => version;
         public int MusicGameSystemVersion => musicGameSystemVersion;
         public int Difficulty => difficulty;
         public string Level => level;

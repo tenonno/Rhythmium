@@ -7,40 +7,40 @@ namespace Rhythmium
     /// <summary>
     /// ノートライン情報
     /// </summary>
-    [Serializable]
-    public abstract class NoteLineEntity<TNoteEntity> : ScriptableObject where TNoteEntity : NoteEntity
+    public abstract class NoteLineEntity<TNoteEntity> where TNoteEntity : NoteEntity
     {
-        [SerializeField] private NoteLineJsonData _jsonData;
-        [SerializeField] private TNoteEntity _head;
-        [SerializeField] private TNoteEntity _tail;
-
-        public NoteLineJsonData JsonData => _jsonData;
+        public readonly NoteLineJsonData JsonData;
 
         /// <summary>
         /// 先頭ノート
         /// </summary>
-        public TNoteEntity Head => _head;
+        public readonly TNoteEntity Head;
 
         /// <summary>
         /// 末尾ノート
         /// </summary>
-        public TNoteEntity Tail => _tail;
+        public readonly TNoteEntity Tail;
 
-        public bool EnableBezier => _jsonData.Bezier.Enable;
-        public Vector2 BezierValue => _jsonData.Bezier.Value;
+        public bool EnableBezier => JsonData.Bezier.Enable;
+        public Vector2 BezierValue => JsonData.Bezier.Value;
 
-        public void Initialize(NoteLineJsonData noteLine, TNoteEntity headNote, TNoteEntity tailNote)
+        protected NoteLineEntity(NoteLineJsonData jsonData, TNoteEntity head, TNoteEntity tail)
         {
-            _jsonData = noteLine;
-            _head = headNote;
-            _tail = tailNote;
+            JsonData = jsonData;
+            Head = head;
+            Tail = tail;
+        }
+
+        private static T Create<T>(NoteLineJsonData jsonData, TNoteEntity head,
+            TNoteEntity tail) where T : NoteLineEntity<TNoteEntity>
+        {
+            return (T)Activator.CreateInstance(typeof(T), jsonData, head, tail);
         }
 
         public virtual T Mirror<T>(IReadOnlyDictionary<TNoteEntity, TNoteEntity> mirroredNoteEntities)
             where T : NoteLineEntity<TNoteEntity>
         {
-            var noteLineEntity = CreateInstance<T>();
-            noteLineEntity.Initialize(JsonData, mirroredNoteEntities[_head], mirroredNoteEntities[_tail]);
+            var noteLineEntity = Create<T>(JsonData, mirroredNoteEntities[Head], mirroredNoteEntities[Tail]);
             return noteLineEntity;
         }
     }

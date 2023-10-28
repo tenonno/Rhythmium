@@ -9,11 +9,14 @@ namespace Rhythmium
     [Serializable]
     public sealed class NoteLineJsonData
     {
-        public Guid guid;
-        public Guid head;
-        public Guid tail;
-
+        [SerializeField] private Guid guid;
+        [SerializeField] private Guid head;
+        [SerializeField] private Guid tail;
         [SerializeField] private NoteLineBezierJsonData bezier;
+
+        public Guid Guid => guid;
+        public Guid Head => head;
+        public Guid Tail => tail;
 
         public NoteLineBezierJsonData Bezier => bezier;
     }

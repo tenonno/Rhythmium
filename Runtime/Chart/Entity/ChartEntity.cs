@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +8,7 @@ namespace Rhythmium
     /// <summary>
     /// 譜面のエンティティ
     /// </summary>
-    public class ChartEntity<TNoteEntity, TNoteLineEntity, TChartDifficulty> where TNoteEntity : NoteEntity
+    public abstract class ChartEntity<TNoteEntity, TNoteLineEntity, TChartDifficulty> where TNoteEntity : NoteEntity
         where TNoteLineEntity : NoteLineEntity<TNoteEntity>
         where TChartDifficulty : Enum
     {
@@ -89,11 +87,14 @@ namespace Rhythmium
 
         public T Mirror<T>() where T : ChartEntity<TNoteEntity, TNoteLineEntity, TChartDifficulty>
         {
-            var mirroredNotes = Notes.ToDictionary(note => note, note => note.Mirror<TNoteEntity>());
+            var mirroredNotes = Notes.ToDictionary(note => note,
+                note => note.Mirror<TNoteEntity>());
+
             var mirroredNoteLines =
                 NoteLines.Select(noteLine => noteLine.Mirror<TNoteLineEntity>(mirroredNotes)).ToList();
 
-            if (!(new ChartEntity<TNoteEntity, TNoteLineEntity, TChartDifficulty>(
+
+            return (T)Activator.CreateInstance(typeof(T),
                 AudioSource,
                 Difficulty,
                 StartTime,
@@ -103,13 +104,14 @@ namespace Rhythmium
                 SpeedChanges,
                 OtherObjects,
                 Measures,
-                Layers
+                Layers);
+            /*
             ) is T instance))
-            {
-                throw new Exception();
-            }
+        {
+            throw new Exception();
+        }
 
-            return instance;
+        return instance;*/
         }
     }
 }

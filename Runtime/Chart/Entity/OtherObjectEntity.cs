@@ -1,28 +1,18 @@
-#nullable enable
-
-using System;
-using UnityEngine;
-
 namespace Rhythmium
 {
     /// <summary>
     /// カスタムオブジェクト情報
     /// </summary>
-    [Serializable]
-    public struct OtherObjectEntity
+    public sealed class OtherObjectEntity
     {
-        [SerializeField] private int _type;
-        [SerializeField] private float _position;
-        [SerializeField] private string _value;
-
         /// <summary>タイプ</summary>
-        public int Type => _type;
+        public string TypeName { get; }
 
         /// <summary>小節位置</summary>
-        public float Position => _position;
+        public float Position { get; }
 
         /// <summary>値</summary>
-        public string Value => _value;
+        public string Value { get; }
 
         /// <summary>
         /// コンストラクタ
@@ -30,9 +20,9 @@ namespace Rhythmium
         /// <param name="jsonData">オブジェクト情報</param>
         public OtherObjectEntity(OtherObjectJsonData jsonData)
         {
-            _type = jsonData.Type;
-            _position = jsonData.MeasureIndex + jsonData.MeasurePosition.To01();
-            _value = jsonData.Value;
+            TypeName = jsonData.TypeName;
+            Position = jsonData.MeasureIndex + jsonData.MeasurePosition.To01();
+            Value = jsonData.Value;
         }
     }
 }

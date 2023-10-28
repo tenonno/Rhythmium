@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using UnityEngine;
 using Guid = System.String;

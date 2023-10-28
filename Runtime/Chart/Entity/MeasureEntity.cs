@@ -5,10 +5,12 @@ namespace Rhythmium
     /// <summary>
     /// 小節情報
     /// </summary>
-    public class MeasureEntity
+    public sealed class MeasureEntity
     {
-        /// <summary>判定時間</summary>
-        public float JudgeTime;
+        /// <summary>
+        /// 判定時間
+        /// </summary>
+        public readonly float JudgeTime;
 
         /// <summary>
         /// コンストラクタ
