@@ -7,16 +7,20 @@ namespace Rhythmium.NoteEditor
 {
     public sealed class NoteEditorServer
     {
+        private readonly string _ip;
         private readonly string _port;
 
-        public NoteEditorServer(string port)
+        private string Url => $"http://{_ip}:{_port}";
+
+        public NoteEditorServer(string ip, string port)
         {
+            _ip = ip;
             _port = port;
         }
 
         public async UniTask<NoteEditorStatus> GetStatusAsync()
         {
-            var url = $"http://localhost:{_port}";
+            var url = Url;
             var request = UnityWebRequest.Get(url);
             request.SetRequestHeader("Content-Type", "application/json");
 
@@ -32,7 +36,7 @@ namespace Rhythmium.NoteEditor
 
         public async UniTask<string> GetChartJsonAsync()
         {
-            var url = $"http://localhost:{_port}/data";
+            var url = Url + "/data";
             var request = UnityWebRequest.Get(url);
             request.SetRequestHeader("Content-Type", "application/json");
 

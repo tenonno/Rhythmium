@@ -1,12 +1,19 @@
 using System;
+using UnityEngine;
 
 namespace Rhythmium.NoteEditor
 {
     [Serializable]
     public struct NoteEditorStatus
     {
-        public string name;
-        public float time;
-        public long updatedAt;
+        // ReSharper disable InconsistentNaming
+        [SerializeField] private string name;
+        [SerializeField] private float time;
+        [SerializeField] private long updatedAt;
+        // ReSharper restore InconsistentNaming
+
+        public string Name => name;
+        public float Time => time;
+        public long UpdatedAt => updatedAt;
     }
 }
