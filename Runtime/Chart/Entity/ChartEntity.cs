@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Guid = System.String;
 
 namespace Rhythmium
 {
     /// <summary>
     /// 譜面のエンティティ
     /// </summary>
-    public abstract class ChartEntity<TNoteEntity, TNoteLineEntity, TChartDifficulty> where TNoteEntity : NoteEntity
-        where TNoteLineEntity : NoteLineEntity<TNoteEntity>
+    public abstract class ChartEntity<TNoteEntity, TNoteType, TNoteLineEntity, TChartDifficulty>
+        where TNoteEntity : NoteEntity<TNoteType>
+        where TNoteType : Enum
+        where TNoteLineEntity : NoteLineEntity<TNoteEntity, TNoteType>
         where TChartDifficulty : Enum
     {
         /// <summary>
@@ -59,7 +59,7 @@ namespace Rhythmium
 
         public List<LayerEntity> Layers { get; }
 
-        public ChartEntity(
+        protected ChartEntity(
             string audioSource,
             TChartDifficulty difficulty,
             float startTime,
@@ -82,36 +82,6 @@ namespace Rhythmium
             OtherObjects = otherObjects;
             Measures = measures;
             Layers = layers;
-        }
-
-
-        public T Mirror<T>() where T : ChartEntity<TNoteEntity, TNoteLineEntity, TChartDifficulty>
-        {
-            var mirroredNotes = Notes.ToDictionary(note => note,
-                note => note.Mirror<TNoteEntity>());
-
-            var mirroredNoteLines =
-                NoteLines.Select(noteLine => noteLine.Mirror<TNoteLineEntity>(mirroredNotes)).ToList();
-
-
-            return (T)Activator.CreateInstance(typeof(T),
-                AudioSource,
-                Difficulty,
-                StartTime,
-                mirroredNotes.Values.ToList(),
-                mirroredNoteLines,
-                BpmChanges,
-                SpeedChanges,
-                OtherObjects,
-                Measures,
-                Layers);
-            /*
-            ) is T instance))
-        {
-            throw new Exception();
-        }
-
-        return instance;*/
         }
     }
 }

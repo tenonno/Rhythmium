@@ -2,17 +2,19 @@ using System;
 using UnityEngine;
 using Guid = System.String;
 
-// ReSharper disable InconsistentNaming
-
 namespace Rhythmium
 {
     [Serializable]
     public sealed class NoteLineJsonData
     {
+        // ReSharper disable InconsistentNaming
+
         [SerializeField] private Guid guid;
         [SerializeField] private Guid head;
         [SerializeField] private Guid tail;
         [SerializeField] private NoteLineBezierJsonData bezier;
+
+        // ReSharper restore InconsistentNaming
 
         public Guid Guid => guid;
         public Guid Head => head;

@@ -53,31 +53,6 @@ namespace Rhythmium
             this.customProps = customProps;
         }
 
-        public override string ToString()
-        {
-            return
-                $"{type} m({measureIndex + measurePosition.To01()}) h({horizontalPosition.Denominator}/{horizontalPosition.Denominator}) s({horizontalSize}) {guid}";
-        }
-
-        public NoteJsonData Mirror()
-        {
-            var mirroredNumerator =
-                horizontalPosition.Denominator - 1 - horizontalPosition.Numerator - (horizontalSize - 1);
-            var mirroredHorizontalPosition = new FractionJsonData(mirroredNumerator, horizontalPosition.Denominator);
-
-            return new NoteJsonData(
-                guid,
-                horizontalSize,
-                mirroredHorizontalPosition,
-                measureIndex,
-                measurePosition,
-                type,
-                lane,
-                layer,
-                customProps
-            );
-        }
-
         public NoteJsonData WithType(string newType)
         {
             return new NoteJsonData(
@@ -91,6 +66,12 @@ namespace Rhythmium
                 layer,
                 customProps
             );
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{type} m({measureIndex + measurePosition.To01()}) h({horizontalPosition.Denominator}/{horizontalPosition.Denominator}) s({horizontalSize}) {guid}";
         }
     }
 }

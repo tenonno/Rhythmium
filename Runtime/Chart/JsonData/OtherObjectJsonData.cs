@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using Guid = System.String;
 
 namespace Rhythmium
 {
@@ -10,7 +9,7 @@ namespace Rhythmium
         // ReSharper disable InconsistentNaming
 
 #pragma warning disable CS8618
-        [SerializeField] private Guid guid;
+        [SerializeField] private string guid;
         [SerializeField] private int measureIndex;
         [SerializeField] private FractionJsonData measurePosition;
         [SerializeField, Obsolete] private int type;
@@ -21,11 +20,10 @@ namespace Rhythmium
 
         // ReSharper restore InconsistentNaming
 
-        public Guid Guid => guid;
+        public string Guid => guid;
         public int MeasureIndex => measureIndex;
         public FractionJsonData MeasurePosition => measurePosition;
 
-        [Obsolete] public int Type => type;
         public string TypeName => typeName;
 
         public string Value => value;

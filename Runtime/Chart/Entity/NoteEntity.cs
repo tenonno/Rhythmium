@@ -1,17 +1,23 @@
 using System;
-using UnityEngine;
 
 namespace Rhythmium
 {
     /// <summary>
     /// ノート情報
     /// </summary>
-    public abstract class NoteEntity
+    public abstract class NoteEntity<TNoteType> where TNoteType : Enum
     {
+        private readonly NoteJsonData _jsonData;
+
         /// <summary>
-        /// 整数型のノートタイプ
+        /// GUID
         /// </summary>
-        public readonly int IntType; // { get; private set; }
+        public string Guid => _jsonData.Guid;
+
+        /// <summary>
+        /// ノートタイプ
+        /// </summary>
+        public readonly TNoteType Type;
 
         /// <summary>
         /// サイズ
@@ -26,44 +32,41 @@ namespace Rhythmium
         /// <summary>
         /// 判定時間
         /// </summary>
-        public readonly float JudgeTime; // { get; private set; }
+        public readonly float JudgeTime;
 
-        public readonly NoteJsonData JsonData; // { get; private set; }
+
+        public NoteCustomPropsJsonData CustomProps => _jsonData.CustomProps;
+        public string Layer => _jsonData.Layer;
+
+        public int MeasureIndex => _jsonData.MeasureIndex;
+        public FractionJsonData MeasurePosition => _jsonData.MeasurePosition;
 
         /// <summary>
         /// 初期化
         /// </summary>
-        /// <param name="note">ノート情報</param>
+        /// <param name="noteJsonData">ノート情報</param>
         /// <param name="judgeTime">判定時間</param>
         /// <param name="getNoteType"></param>
-        protected NoteEntity(NoteJsonData note, float judgeTime, Func<NoteJsonData, int> getNoteType)
+        /// <param name="isMirror"></param>
+        protected NoteEntity(NoteJsonData noteJsonData, float judgeTime, Func<NoteJsonData, TNoteType> getNoteType,
+            bool isMirror)
         {
-            JsonData = note;
-            IntType = getNoteType(note);
+            _jsonData = noteJsonData;
+            Type = getNoteType(noteJsonData);
+            Size = noteJsonData.HorizontalSize;
+            LanePosition = noteJsonData.HorizontalPosition.Numerator;
 
-            LanePosition = note.HorizontalPosition.Numerator;
-            Size = note.HorizontalSize;
-
+            if (isMirror)
+            {
+                LanePosition = MirrorLanePosition(Size, LanePosition, noteJsonData.HorizontalPosition.Denominator);
+            }
 
             JudgeTime = judgeTime;
         }
 
-        public virtual NoteJsonData MirrorJsonData()
+        protected int MirrorLanePosition(int size, int lanePosition, int laneDivision)
         {
-            return JsonData.Mirror();
-        }
-
-
-        private static T Create<T>(NoteJsonData note, float judgeTime) where T : NoteEntity
-        {
-            return (T)Activator.CreateInstance(typeof(T), note, judgeTime);
-        }
-
-
-        public virtual T Mirror<T>() where T : NoteEntity
-        {
-            var noteLineEntity = Create<T>(this.JsonData.Mirror(), JudgeTime);
-            return noteLineEntity;
+            return laneDivision - 1 - lanePosition - (size - 1);
         }
     }
 }
