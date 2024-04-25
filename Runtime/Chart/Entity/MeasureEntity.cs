@@ -13,6 +13,11 @@ namespace Rhythmium
         public readonly float JudgeTime;
 
         /// <summary>
+        /// 小節線を非表示にするか
+        /// </summary>
+        public readonly bool InvisibleLine;
+
+        /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="data">小節情報</param>
@@ -20,6 +25,7 @@ namespace Rhythmium
         public MeasureEntity(MeasureJsonData data, float judgeTime)
         {
             JudgeTime = judgeTime;
+            InvisibleLine = data.InvisibleLine;
         }
     }
 }
