@@ -47,6 +47,8 @@ namespace Rhythmium
         {
             chartJsonData = Migrate(chartJsonData);
 
+            var layerSet = chartJsonData.Layers.Select(layer => layer.Guid).ToHashSet();
+
             var audioSource = chartJsonData.AudioSource.Split('.')[0];
             var startTime = chartJsonData.StartTime;
             var difficulty = (TChartDifficulty)Enum.ToObject(typeof(TChartDifficulty), chartJsonData.Difficulty);
@@ -57,6 +59,12 @@ namespace Rhythmium
 
             foreach (var otherObjectJsonData in chartJsonData.Timeline.OtherObjects)
             {
+                if (!layerSet.Contains(otherObjectJsonData.Layer))
+                {
+                    Debug.LogWarning("レイヤーに所属していない OtherObject が存在します: " + otherObjectJsonData.Guid);
+                    continue;
+                }
+
                 switch (otherObjectJsonData.TypeName)
                 {
                     case "bpm":
@@ -87,6 +95,12 @@ namespace Rhythmium
             var noteEntities = new List<TNoteEntity>();
             foreach (var noteJsonData in chartJsonData.Timeline.Notes)
             {
+                if (!layerSet.Contains(noteJsonData.Layer))
+                {
+                    Debug.LogWarning("レイヤーに所属していないノートが存在します: " + noteJsonData.Guid);
+                    continue;
+                }
+
                 // ノートの小節位置
                 var noteMeasurePosition = noteJsonData.MeasureIndex + noteJsonData.MeasurePosition.To01();
 

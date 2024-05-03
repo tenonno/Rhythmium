@@ -5,14 +5,25 @@ namespace Rhythmium
     /// </summary>
     public sealed class OtherObjectEntity
     {
-        /// <summary>タイプ</summary>
+        /// <summary>
+        /// タイプ
+        /// </summary>
         public string TypeName { get; }
 
-        /// <summary>小節位置</summary>
+        /// <summary>
+        /// 小節位置
+        /// </summary>
         public float Position { get; }
 
-        /// <summary>値</summary>
+        /// <summary>
+        /// 値
+        /// </summary>
         public string Value { get; }
+
+        /// <summary>
+        /// レイヤー
+        /// </summary>
+        public string Layer { get; }
 
         /// <summary>
         /// コンストラクタ
@@ -23,6 +34,7 @@ namespace Rhythmium
             TypeName = jsonData.TypeName;
             Position = jsonData.MeasureIndex + jsonData.MeasurePosition.To01();
             Value = jsonData.Value;
+            Layer = jsonData.Layer;
         }
     }
 }
