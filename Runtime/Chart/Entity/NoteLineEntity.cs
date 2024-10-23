@@ -24,6 +24,8 @@ namespace Rhythmium
         public bool EnableBezier => JsonData.Bezier.Enable;
         public readonly Vector2 BezierValue;
 
+        public bool EnableVerticalFit => JsonData.VerticalFit.Enable;
+
         protected NoteLineEntity(NoteLineJsonData jsonData, TNoteEntity head, TNoteEntity tail, bool isMirror)
         {
             JsonData = jsonData;
